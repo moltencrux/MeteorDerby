@@ -13,11 +13,15 @@ CLOCK = pygame.time.Clock()
 # GAME CLASSES AND METHODS
 class PyladiesGameObject(GameObject):
     def draw(self, surface):
-        surface.blit(IMG_ASTEROID_BIG, self.pos)
+        surface.blit(self.image, self.pos)
+
+
+class Asteroid(PyladiesGameObject):
+    image = IMG_ASTEROID_BIG
 
 # GAME INIT
 done = False
-pgm = PyladiesGameObject((200, 200), 50, 2, 17)
+pgm = Asteroid((200, 200), 50, 2, 17)
 
 while not done:
     # EVENTS
