@@ -13,7 +13,8 @@ CLOCK = pygame.time.Clock()
 # GAME CLASSES AND METHODS
 class PyladiesGameObject(GameObject):
     def draw(self, surface):
-        surface.blit(self.image, self.pos)
+        blit_pos = [coord - self.radius for coord in self.pos]
+        surface.blit(self.image, blit_pos)
 
 
 class Asteroid(PyladiesGameObject):
