@@ -21,5 +21,6 @@ while not done:
     # LOGIC
 
     # DRAWING
+    SCREEN.fill((0, 0, 55))
     pygame.display.flip()
     CLOCK.tick(60)
