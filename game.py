@@ -29,7 +29,9 @@ class Asteroid(PyladiesGameObject):
 
 # GAME INIT
 done = False
-pgm = Asteroid((200, 200), 50)
+asteroids = []
+for _ in range(6):
+    asteroids.append(Asteroid((400, 300), 50))
 
 while not done:
     # EVENTS
@@ -38,13 +40,15 @@ while not done:
             done = True
 
     # LOGIC
+    for asteroid in asteroids:
+        asteroid.animate()
+        asteroid.contain(SCREEN)
 
     # DRAWING
-    pgm.animate()
-    pgm.contain(SCREEN)
 
     SCREEN.blit(IMG_EARTH, (0, 0))
-    pgm.draw(SCREEN)
+    for asteroid in asteroids:
+        asteroid.draw(SCREEN)
 
     pygame.display.flip()
     CLOCK.tick(60)
