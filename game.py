@@ -4,6 +4,7 @@ import pygame
 pygame.init()
 
 SCREEN = pygame.display.set_mode((800, 600))
+pygame.display.set_caption('Asteroids')
 CLOCK = pygame.time.Clock()
 
 # GAME CLASSES AND METHODS
