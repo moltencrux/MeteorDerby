@@ -1,4 +1,5 @@
 import pygame
+from utils import GameObject
 
 # PYGAME RESOURCES
 pygame.init()
@@ -10,9 +11,13 @@ IMG_ASTEROID_BIG = pygame.image.load('asteroid-big.png').convert_alpha()
 CLOCK = pygame.time.Clock()
 
 # GAME CLASSES AND METHODS
+class PyladiesGameObject(GameObject):
+    def draw(self, surface):
+        surface.blit(IMG_ASTEROID_BIG, self.pos)
 
 # GAME INIT
 done = False
+pgm = PyladiesGameObject((20, 20), 50, 0, 0)
 
 while not done:
     # EVENTS
@@ -24,7 +29,7 @@ while not done:
 
     # DRAWING
     SCREEN.blit(IMG_EARTH, (0, 0))
-    SCREEN.blit(IMG_ASTEROID_BIG, (100, 100))
-    SCREEN.blit(IMG_ASTEROID_BIG, (300, 400))
+    pgm.draw(SCREEN)
+
     pygame.display.flip()
     CLOCK.tick(60)
