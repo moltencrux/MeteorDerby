@@ -5,6 +5,7 @@ pygame.init()
 
 SCREEN = pygame.display.set_mode((800, 600))
 pygame.display.set_caption('Asteroids')
+IMG_EARTH = pygame.image.load('earth.png').convert()
 CLOCK = pygame.time.Clock()
 
 # GAME CLASSES AND METHODS
@@ -21,6 +22,6 @@ while not done:
     # LOGIC
 
     # DRAWING
-    SCREEN.fill((0, 0, 55))
+    SCREEN.blit(IMG_EARTH, (0, 0))
     pygame.display.flip()
     CLOCK.tick(60)
