@@ -9,6 +9,7 @@ SCREEN = pygame.display.set_mode((800, 600))
 pygame.display.set_caption('Asteroids')
 IMG_EARTH = pygame.image.load('earth.png').convert()
 IMG_ASTEROID_BIG = pygame.image.load('asteroid-big.png').convert_alpha()
+IMG_STARSHIP = pygame.image.load('starship.png').convert_alpha()
 CLOCK = pygame.time.Clock()
 
 # GAME CLASSES AND METHODS
@@ -27,6 +28,10 @@ class Asteroid(PyladiesGameObject):
         super().__init__(pos, radius, speed, angle)
 
 
+class Starship(PyladiesGameObject):
+    image = IMG_STARSHIP
+
+
 # GAME INIT
 done = False
 
@@ -35,6 +40,8 @@ for _ in range(6):
     asteroids.append(Asteroid(
         get_random_pos(SCREEN.get_width(), SCREEN.get_height()), 50)
     )
+
+starship = Starship((400, 300), 20, 0, 0)
 
 while not done:
     # EVENTS
@@ -52,6 +59,8 @@ while not done:
     SCREEN.blit(IMG_EARTH, (0, 0))
     for asteroid in asteroids:
         asteroid.draw(SCREEN)
+
+    starship.draw(SCREEN)
 
     pygame.display.flip()
     CLOCK.tick(60)
