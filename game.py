@@ -1,6 +1,6 @@
 import pygame
 import random
-from utils import GameObject
+from utils import GameObject, get_random_pos
 
 # PYGAME RESOURCES
 pygame.init()
@@ -29,9 +29,12 @@ class Asteroid(PyladiesGameObject):
 
 # GAME INIT
 done = False
+
 asteroids = []
 for _ in range(6):
-    asteroids.append(Asteroid((400, 300), 50))
+    asteroids.append(Asteroid(
+        get_random_pos(SCREEN.get_width(), SCREEN.get_height()), 50)
+    )
 
 while not done:
     # EVENTS
