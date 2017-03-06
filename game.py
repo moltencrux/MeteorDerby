@@ -17,7 +17,7 @@ class PyladiesGameObject(GameObject):
 
 # GAME INIT
 done = False
-pgm = PyladiesGameObject((200, 200), 50, 2, 0)
+pgm = PyladiesGameObject((200, 200), 50, 2, 17)
 
 while not done:
     # EVENTS
@@ -29,6 +29,7 @@ while not done:
 
     # DRAWING
     pgm.animate()
+    pgm.contain(SCREEN)
 
     SCREEN.blit(IMG_EARTH, (0, 0))
     pgm.draw(SCREEN)
