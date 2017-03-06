@@ -53,6 +53,8 @@ while not done:
     for asteroid in asteroids:
         asteroid.animate()
         asteroid.contain(SCREEN)
+        if asteroid.collides_with(starship):
+            done = True
 
     # DRAWING
 
