@@ -22,7 +22,7 @@ class Asteroid(PyladiesGameObject):
     image = IMG_ASTEROID_BIG
 
     def __init__(self, pos, radius):
-        speed = 2
+        speed = max(1, random.random() * 3)
         angle = random.randrange(0, 360)
         super().__init__(pos, radius, speed, angle)
 
