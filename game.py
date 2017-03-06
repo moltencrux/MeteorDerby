@@ -1,4 +1,5 @@
 import pygame
+import random
 from utils import GameObject
 
 # PYGAME RESOURCES
@@ -20,9 +21,15 @@ class PyladiesGameObject(GameObject):
 class Asteroid(PyladiesGameObject):
     image = IMG_ASTEROID_BIG
 
+    def __init__(self, pos, radius):
+        speed = 2
+        angle = random.randrange(0, 360)
+        super().__init__(pos, radius, speed, angle)
+
+
 # GAME INIT
 done = False
-pgm = Asteroid((200, 200), 50, 2, 17)
+pgm = Asteroid((200, 200), 50)
 
 while not done:
     # EVENTS
