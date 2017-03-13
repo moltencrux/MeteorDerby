@@ -51,7 +51,11 @@ class Starship(PyladiesGameObject):
 
     def draw(self, surface):
         rotated_surf = pygame.transform.rotozoom(self.image, -self.angle, 1.0)
-        blit_pos = [coord - self.radius for coord in self.pos]
+
+        half_width = rotated_surf.get_width() / 2
+        half_height = rotated_surf.get_height() / 2
+        blit_pos = [self.pos[0] - half_width, self.pos[1] - half_height]
+
         surface.blit(rotated_surf, blit_pos)
 
 
