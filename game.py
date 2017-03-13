@@ -10,6 +10,7 @@ pygame.display.set_caption('Asteroids')
 IMG_EARTH = pygame.image.load('earth.png').convert()
 IMG_ASTEROID_BIG = pygame.image.load('asteroid-big.png').convert_alpha()
 IMG_STARSHIP = pygame.image.load('starship.png').convert_alpha()
+IMG_BULLET = pygame.image.load('bullet.png').convert_alpha()
 CLOCK = pygame.time.Clock()
 
 # GAME CLASSES AND METHODS
@@ -26,6 +27,10 @@ class Asteroid(PyladiesGameObject):
         speed = max(1, random.random() * 3)
         angle = random.randrange(0, 360)
         super().__init__(pos, radius, speed, angle)
+
+
+class Bullet(PyladiesGameObject):
+    image = IMG_BULLET
 
 
 class Starship(PyladiesGameObject):
@@ -66,6 +71,8 @@ class Starship(PyladiesGameObject):
 done = False
 
 asteroids = []
+bullets = []
+
 for _ in range(6):
     asteroids.append(Asteroid(
         get_random_pos(SCREEN.get_width(), SCREEN.get_height()), 50)
@@ -78,6 +85,8 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            bullets.append(Bullet(starship.pos, 5, 7.0, starship.angle))
 
     # LOGIC
 
@@ -97,11 +106,18 @@ while not done:
         if asteroid.collides_with(starship):
             done = True
 
+    for bullet in bullets:
+        bullet.animate()
+
     # DRAWING
 
     SCREEN.blit(IMG_EARTH, (0, 0))
+
     for asteroid in asteroids:
         asteroid.draw(SCREEN)
+
+    for bullet in bullets:
+        bullet.draw(SCREEN)
 
     starship.draw(SCREEN)
 
