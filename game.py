@@ -1,6 +1,6 @@
 import pygame
 import random
-from utils import GameObject, get_random_pos
+from utils import GameObject, get_random_pos, change_dir
 
 # PYGAME RESOURCES
 pygame.init()
@@ -32,8 +32,8 @@ class Starship(PyladiesGameObject):
     image = IMG_STARSHIP
 
     def __init__(self, pos):
-        super().__init__(pos, 20, 0.0, 0)
-        self.angle = 0
+        super().__init__(pos, 20, 0.0, 0.0)
+        self.angle = 0.0
 
     def _rotate(self, clockwise=True):
         delta = 3
@@ -48,6 +48,9 @@ class Starship(PyladiesGameObject):
 
     def rotate_counterclockwise(self):
         self._rotate(False)
+
+    def move(self):
+        change_dir(self.dir, self.angle, 2.0)
 
     def draw(self, surface):
         rotated_surf = pygame.transform.rotozoom(self.image, -self.angle, 1.0)
@@ -76,12 +79,17 @@ while not done:
         if event.type == pygame.QUIT:
             done = True
 
+    # LOGIC
+
     if pygame.key.get_pressed()[pygame.K_RIGHT]:
         starship.rotate_clockwise()
     elif pygame.key.get_pressed()[pygame.K_LEFT]:
         starship.rotate_counterclockwise()
+    if pygame.key.get_pressed()[pygame.K_UP]:
+        starship.move()
 
-    # LOGIC
+    starship.animate()
+
     for asteroid in asteroids:
         asteroid.animate()
         asteroid.contain(SCREEN)
