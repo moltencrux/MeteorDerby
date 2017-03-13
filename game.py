@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from utils import GameObject, get_random_pos, change_dir
 
 # PYGAME RESOURCES
@@ -55,7 +56,7 @@ class Starship(PyladiesGameObject):
         self._rotate(False)
 
     def move(self):
-        change_dir(self.dir, self.angle, 0.9)
+        change_dir(self.dir, self.angle, 0.5)
 
     def draw(self, surface):
         rotated_surf = pygame.transform.rotozoom(self.image, -90 - self.angle, 1.0)
@@ -86,7 +87,12 @@ while not done:
         if event.type == pygame.QUIT:
             done = True
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            bullets.append(Bullet(starship.pos, 5, 7.0, starship.angle))
+            v = starship.dir
+            velocity = math.sqrt(v[0]**2 + v[1]**2)
+            bullet = Bullet(starship.pos, 5, velocity + 2.0, starship.angle)
+            while bullet.collides_with(starship):
+                bullet.animate()
+            bullets.append(bullet)
 
     # LOGIC
 
@@ -105,13 +111,15 @@ while not done:
         asteroid.contain(SCREEN)
         if asteroid.collides_with(starship):
             done = True
-        for bullet in bullets:
-            if asteroid.collides_with(bullet):
-                asteroids.remove(asteroid)
 
     for bullet in bullets:
         bullet.animate()
         bullet.contain(SCREEN)
+        for asteroid in asteroids:
+            if asteroid.collides_with(bullet):
+                asteroids.remove(asteroid)
+        if bullet.collides_with(starship):
+            done = True
 
     # DRAWING
 
