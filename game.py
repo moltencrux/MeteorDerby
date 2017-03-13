@@ -50,7 +50,7 @@ class Starship(PyladiesGameObject):
         self._rotate(False)
 
     def move(self):
-        change_dir(self.dir, self.angle, 1.1)
+        change_dir(self.dir, self.angle, 0.9)
 
     def draw(self, surface):
         rotated_surf = pygame.transform.rotozoom(self.image, -90 - self.angle, 1.0)
@@ -89,6 +89,7 @@ while not done:
         starship.move()
 
     starship.animate()
+    starship.contain(SCREEN)
 
     for asteroid in asteroids:
         asteroid.animate()
