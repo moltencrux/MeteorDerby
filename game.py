@@ -36,11 +36,12 @@ class Starship(PyladiesGameObject):
         self.angle = 0
 
     def _rotate(self, clockwise=True):
+        delta = 3
         if clockwise:
-            delta = 1
+            direction = 1
         else:
-            delta = -1
-        self.angle += delta
+            direction = -1
+        self.angle += delta * direction
 
     def rotate_clockwise(self):
         self._rotate(True)
