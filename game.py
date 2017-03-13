@@ -33,7 +33,7 @@ class Starship(PyladiesGameObject):
 
     def __init__(self, pos):
         super().__init__(pos, 20, 0.0, 0.0)
-        self.angle = 0.0
+        self.angle = -90.0
 
     def _rotate(self, clockwise=True):
         delta = 3
@@ -50,10 +50,10 @@ class Starship(PyladiesGameObject):
         self._rotate(False)
 
     def move(self):
-        change_dir(self.dir, self.angle, 2.0)
+        change_dir(self.dir, self.angle, 1.1)
 
     def draw(self, surface):
-        rotated_surf = pygame.transform.rotozoom(self.image, -self.angle, 1.0)
+        rotated_surf = pygame.transform.rotozoom(self.image, -90 - self.angle, 1.0)
 
         half_width = rotated_surf.get_width() / 2
         half_height = rotated_surf.get_height() / 2
