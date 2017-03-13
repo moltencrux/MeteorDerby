@@ -13,8 +13,18 @@ IMG_ASTEROID_BIG = pygame.image.load('asteroid-big.png').convert_alpha()
 IMG_STARSHIP = pygame.image.load('starship.png').convert_alpha()
 IMG_BULLET = pygame.image.load('bullet.png').convert_alpha()
 CLOCK = pygame.time.Clock()
+FONT = pygame.font.Font(None, 64)
 
 # GAME CLASSES AND METHODS
+def print_text(surface, text):
+    w, h = surface.get_size()
+    text_surface = FONT.render(text, 1, (200, 200, 0))
+    rect = text_surface.get_rect()
+    rect.center = [w / 2, h / 2]
+
+    surface.blit(text_surface, rect)
+
+
 class PyladiesGameObject(GameObject):
     def draw(self, surface):
         blit_pos = [coord - self.radius for coord in self.pos]
@@ -70,6 +80,7 @@ class Starship(PyladiesGameObject):
 
 # GAME INIT
 done = False
+status_text = ''
 
 asteroids = []
 bullets = []
@@ -110,7 +121,7 @@ while not done:
         asteroid.animate()
         asteroid.contain(SCREEN)
         if asteroid.collides_with(starship):
-            done = True
+            status_text = 'You lost!'
 
     for bullet in bullets:
         bullet.animate()
@@ -118,8 +129,10 @@ while not done:
         for asteroid in asteroids:
             if asteroid.collides_with(bullet):
                 asteroids.remove(asteroid)
-        if bullet.collides_with(starship):
-            done = True
+                if not asteroids and not status_text:
+                    status_text = 'You won!'
+        if bullet.collides_with(starship) and not status_text:
+            status_text = 'You lost!'
 
     # DRAWING
 
@@ -132,6 +145,9 @@ while not done:
         bullet.draw(SCREEN)
 
     starship.draw(SCREEN)
+
+    if status_text:
+        print_text(SCREEN, status_text)
 
     pygame.display.flip()
     CLOCK.tick(60)
