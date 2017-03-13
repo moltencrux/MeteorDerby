@@ -105,9 +105,13 @@ while not done:
         asteroid.contain(SCREEN)
         if asteroid.collides_with(starship):
             done = True
+        for bullet in bullets:
+            if asteroid.collides_with(bullet):
+                asteroids.remove(asteroid)
 
     for bullet in bullets:
         bullet.animate()
+        bullet.contain(SCREEN)
 
     # DRAWING
 
