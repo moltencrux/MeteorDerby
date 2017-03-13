@@ -4,6 +4,7 @@ import math
 from utils import GameObject, get_random_pos, change_dir
 
 # PYGAME RESOURCES
+pygame.mixer.init(buffer=1024)
 pygame.init()
 
 SCREEN = pygame.display.set_mode((800, 600))
@@ -14,6 +15,7 @@ IMG_STARSHIP = pygame.image.load('starship.png').convert_alpha()
 IMG_BULLET = pygame.image.load('bullet.png').convert_alpha()
 CLOCK = pygame.time.Clock()
 FONT = pygame.font.Font(None, 64)
+LASER = pygame.mixer.Sound('laser.wav')
 
 # GAME CLASSES AND METHODS
 def print_text(surface, text):
@@ -104,6 +106,7 @@ while not done:
             while bullet.collides_with(starship):
                 bullet.animate()
             bullets.append(bullet)
+            LASER.play()
 
     # LOGIC
 
