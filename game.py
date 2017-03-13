@@ -31,6 +31,11 @@ class Asteroid(PyladiesGameObject):
 class Starship(PyladiesGameObject):
     image = IMG_STARSHIP
 
+    def draw(self, surface):
+        rotated_surf = pygame.transform.rotozoom(self.image, -3000, 1.0)
+        blit_pos = [coord - self.radius for coord in self.pos]
+        surface.blit(rotated_surf, blit_pos)
+
 
 # GAME INIT
 done = False
