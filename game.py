@@ -103,6 +103,8 @@ while not done:
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             done = True
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            if not starship:
+                continue
             v = starship.dir
             velocity = math.sqrt(v[0]**2 + v[1]**2)
             bullet = Bullet(starship.pos, 5, velocity + 2.0, starship.angle)
@@ -113,27 +115,30 @@ while not done:
 
     # LOGIC
 
-    if pygame.key.get_pressed()[pygame.K_RIGHT]:
-        starship.rotate_clockwise()
-    elif pygame.key.get_pressed()[pygame.K_LEFT]:
-        starship.rotate_counterclockwise()
-    if pygame.key.get_pressed()[pygame.K_UP]:
-        starship.move()
+    if starship:
+        if pygame.key.get_pressed()[pygame.K_RIGHT]:
+            starship.rotate_clockwise()
+        elif pygame.key.get_pressed()[pygame.K_LEFT]:
+            starship.rotate_counterclockwise()
+        if pygame.key.get_pressed()[pygame.K_UP]:
+            starship.move()
 
-    starship.animate()
-    starship.contain(SCREEN)
+        starship.animate()
+        starship.contain(SCREEN)
 
     for asteroid in asteroids:
         asteroid.animate()
         asteroid.contain(SCREEN)
-        if asteroid.collides_with(starship):
+        if starship and asteroid.collides_with(starship):
             status_text = 'You lost!'
+            starship = None
 
     for bullet in bullets:
         bullet.animate()
         bullet.contain(SCREEN)
-        if bullet.collides_with(starship) and not status_text:
+        if starship and bullet.collides_with(starship) and not status_text:
             status_text = 'You lost!'
+            starship = None
         for asteroid in asteroids:
             if asteroid.collides_with(bullet):
                 if asteroid.image != IMG_ASTEROID_SMALL:
@@ -162,7 +167,8 @@ while not done:
     for bullet in bullets:
         bullet.draw(SCREEN)
 
-    starship.draw(SCREEN)
+    if starship:
+        starship.draw(SCREEN)
 
     if status_text:
         print_text(SCREEN, status_text)
