@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+from itertools import chain
 from utils import GameObject, get_random_pos, change_dir
 
 # PYGAME RESOURCES
@@ -123,19 +124,12 @@ while not done:
         if pygame.key.get_pressed()[pygame.K_UP]:
             starship.move()
 
-        starship.animate()
-        starship.contain(SCREEN)
-
     for asteroid in asteroids:
-        asteroid.animate()
-        asteroid.contain(SCREEN)
         if starship and asteroid.collides_with(starship):
             status_text = 'You lost!'
             starship = None
 
     for bullet in bullets:
-        bullet.animate()
-        bullet.contain(SCREEN)
         if starship and bullet.collides_with(starship) and not status_text:
             status_text = 'You lost!'
             starship = None
@@ -161,14 +155,10 @@ while not done:
 
     SCREEN.blit(IMG_EARTH, (0, 0))
 
-    for asteroid in asteroids:
-        asteroid.draw(SCREEN)
-
-    for bullet in bullets:
-        bullet.draw(SCREEN)
-
-    if starship:
-        starship.draw(SCREEN)
+    for obj in chain(asteroids, bullets, (starship,) if starship else ()):
+        obj.animate()
+        obj.contain(SCREEN)
+        obj.draw(SCREEN)
 
     if status_text:
         print_text(SCREEN, status_text)
