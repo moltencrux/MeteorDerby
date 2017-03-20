@@ -88,6 +88,7 @@ class Starship(PyladiesGameObject):
 # GAME INIT
 done = False
 status_text = ''
+shots_status = 0
 
 asteroids = []
 bullets = []
@@ -166,15 +167,18 @@ while not done:
     if status_text:
         print_text(SCREEN, status_text)
 
-    shots_left = 0
-    for asteroid in asteroids:
-        if asteroid.image == IMG_ASTEROID_BIG:
-            shots_left += 7
-        elif asteroid.image == IMG_ASTEROID_MEDIUM:
-            shots_left += 3
-        else:
-            shots_left += 1
-    print_text(SCREEN, str(shots_left), (0, 0))
+    if starship is not None:
+        shots_left = 0
+        for asteroid in asteroids:
+            if asteroid.image == IMG_ASTEROID_BIG:
+                shots_left += 7
+            elif asteroid.image == IMG_ASTEROID_MEDIUM:
+                shots_left += 3
+            else:
+                shots_left += 1
+        shots_status = shots_left
+
+    print_text(SCREEN, str(shots_status), (0, 0))
 
     pygame.display.flip()
     CLOCK.tick(60)
