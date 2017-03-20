@@ -132,6 +132,8 @@ while not done:
     for bullet in bullets:
         bullet.animate()
         bullet.contain(SCREEN)
+        if bullet.collides_with(starship) and not status_text:
+            status_text = 'You lost!'
         for asteroid in asteroids:
             if asteroid.collides_with(bullet):
                 if asteroid.image != IMG_ASTEROID_SMALL:
@@ -147,8 +149,8 @@ while not done:
                 asteroids.remove(asteroid)
                 if not asteroids and not status_text:
                     status_text = 'You won!'
-        if bullet.collides_with(starship) and not status_text:
-            status_text = 'You lost!'
+                bullets.remove(bullet)
+                break
 
     # DRAWING
 
