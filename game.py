@@ -21,13 +21,16 @@ FONT = pygame.font.Font(None, 64)
 LASER = pygame.mixer.Sound('laser.wav')
 
 # GAME CLASSES AND METHODS
-def print_text(surface, text):
+def print_text(surface, text, pos=None):
     w, h = surface.get_size()
     text_surface = FONT.render(text, 1, (200, 200, 0))
     rect = text_surface.get_rect()
     rect.center = [w / 2, h / 2]
 
-    surface.blit(text_surface, rect)
+    if not pos:
+        surface.blit(text_surface, rect)
+    else:
+        surface.blit(text_surface, pos)
 
 
 class PyladiesGameObject(GameObject):
