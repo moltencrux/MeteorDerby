@@ -99,6 +99,8 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            done = True
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             v = starship.dir
             velocity = math.sqrt(v[0]**2 + v[1]**2)
