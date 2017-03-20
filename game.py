@@ -11,6 +11,8 @@ SCREEN = pygame.display.set_mode((800, 600))
 pygame.display.set_caption('Asteroids')
 IMG_EARTH = pygame.image.load('earth.png').convert()
 IMG_ASTEROID_BIG = pygame.image.load('asteroid-big.png').convert_alpha()
+IMG_ASTEROID_MEDIUM = pygame.image.load('asteroid-medium.png').convert_alpha()
+IMG_ASTEROID_SMALL = pygame.image.load('asteroid-small.png').convert_alpha()
 IMG_STARSHIP = pygame.image.load('starship.png').convert_alpha()
 IMG_BULLET = pygame.image.load('bullet.png').convert_alpha()
 CLOCK = pygame.time.Clock()
@@ -34,11 +36,10 @@ class PyladiesGameObject(GameObject):
 
 
 class Asteroid(PyladiesGameObject):
-    image = IMG_ASTEROID_BIG
-
-    def __init__(self, pos, radius):
+    def __init__(self, pos, radius, image=IMG_ASTEROID_BIG):
         speed = max(1, random.random() * 3)
         angle = random.randrange(0, 360)
+        self.image = image
         super().__init__(pos, radius, speed, angle)
 
 
@@ -133,6 +134,16 @@ while not done:
         bullet.contain(SCREEN)
         for asteroid in asteroids:
             if asteroid.collides_with(bullet):
+                if asteroid.image != IMG_ASTEROID_SMALL:
+                    if asteroid.image == IMG_ASTEROID_BIG:
+                        new_image = IMG_ASTEROID_MEDIUM
+                    else:
+                        new_image = IMG_ASTEROID_SMALL
+                    new_radius = new_image.get_width() / 2
+                    for _ in range(2):
+                        asteroids.append(Asteroid(
+                            asteroid.pos, new_radius, new_image
+                        ))
                 asteroids.remove(asteroid)
                 if not asteroids and not status_text:
                     status_text = 'You won!'
