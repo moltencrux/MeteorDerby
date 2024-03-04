@@ -1,34 +1,5 @@
 import math
-import operator
 import random
-
-
-class GameObject:
-    def __init__(self, pos, radius, speed, angle_deg):
-        self.pos = pos
-        angle_rad = math.radians(angle_deg)
-        self.dir = [speed*math.cos(angle_rad), speed*math.sin(angle_rad)]
-        self.radius = radius
-
-    def draw(self, surface):
-        raise Exception('Not implemented yet!')
-
-    def contain(self, surface):
-        orig_pos = tuple(self.pos)
-        x, y = self.pos
-        w, h = surface.get_size()
-        self.pos = (x % w, y % h)
-        return self.pos != orig_pos
-
-    def animate(self):
-        self.pos = list(map(operator.add, self.pos, self.dir))
-
-    def collides_with(self, other_obj):
-        distance = math.sqrt(
-            (self.pos[0] - other_obj.pos[0])**2 +
-            (self.pos[1] - other_obj.pos[1])**2
-        )
-        return distance < self.radius + other_obj.radius
 
 
 def get_random_pos(width, height):
@@ -43,3 +14,17 @@ def change_dir(direction, angle_deg, acceleration):
     angle = math.radians(angle_deg)
     direction[0] += math.cos(angle) * acceleration
     direction[1] += math.sin(angle) * acceleration
+
+
+def print_text(surface, text, font, pos=None):
+    w, h = surface.get_size()
+    text_surface = font.render(text, 1, (200, 200, 0))
+    rect = text_surface.get_rect()
+    rect.center = [w / 2, h / 2]
+
+    if not pos:
+        surface.blit(text_surface, rect)
+    else:
+        surface.blit(text_surface, pos)
+
+
