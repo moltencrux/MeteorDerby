@@ -3,6 +3,7 @@ import pygame.image
 import random
 import math
 import operator
+from utils import change_dir
 
 IMG_STARSHIP = pygame.image.load('starship.png').convert_alpha()
 IMG_ASTEROID_BIG = pygame.image.load('asteroid-big.png').convert_alpha()
