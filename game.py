@@ -37,84 +37,65 @@ class MeteorDerby:
         done = False
 
         while not done:
-            # EVENTS
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    done = True
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    done = True
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    if not self.starship:
-                        continue
-                    self.starship.fire(self.bullets)
+            self._process_input()
+            self._process_game_logic()
+            self._draw()
+        pygame.quit()
 
-                    #while bullet.collides_with(self.starship):
-                    #    bullet.animate()
-                    #self.bullets.append(bullet)
 
-            # LOGIC
+    def _process_input(self):
+        # EVENTS
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done = True
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                done = True
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                if not self.starship:
+                    continue
+                self.starship.fire(self.bullets)
 
-            if self.starship:
-                if pygame.key.get_pressed()[pygame.K_RIGHT]:
-                    self.starship.rotate_clockwise()
-                elif pygame.key.get_pressed()[pygame.K_LEFT]:
-                    self.starship.rotate_counterclockwise()
-                if pygame.key.get_pressed()[pygame.K_UP]:
-                    self.starship.move()
+                #while bullet.collides_with(self.starship):
+                #    bullet.animate()
+                #self.bullets.append(bullet)
 
+    def _process_game_logic(self):
+        # LOGIC
+
+        if self.starship:
+            if pygame.key.get_pressed()[pygame.K_RIGHT]:
+                self.starship.rotate_clockwise()
+            elif pygame.key.get_pressed()[pygame.K_LEFT]:
+                self.starship.rotate_counterclockwise()
+            if pygame.key.get_pressed()[pygame.K_UP]:
+                self.starship.move()
+
+        for asteroid in self.asteroids.values():
+            """
+            if self.starship and asteroid.collides_with(self.starship):
+                self.status_text = 'You lost!'
+                self.starship = None
+            """
+
+        for bullet in list(self.bullets.values()):
+            """
+            if self.starship and bullet.collides_with(self.starship) and not self.status_text:
+                self.status_text = 'You lost!'
+                self.starship = None
+            """
             for asteroid in self.asteroids.values():
-                """
-                if self.starship and asteroid.collides_with(self.starship):
-                    self.status_text = 'You lost!'
-                    self.starship = None
-                """
+                if asteroid.collides_with(bullet):
+                    asteroid.split()
 
-            for bullet in list(self.bullets.values()):
-                """
-                if self.starship and bullet.collides_with(self.starship) and not self.status_text:
-                    self.status_text = 'You lost!'
-                    self.starship = None
-                """
-                for asteroid in self.asteroids.values():
-                    if asteroid.collides_with(bullet):
-                        asteroid.split()
+                if not self.asteroids and not self.status_text:
+                    self.status_text = 'You won!'
+                bullet.destroy()
+                break
 
-                    if not self.asteroids and not self.status_text:
-                        self.status_text = 'You won!'
-                    bullet.destroy()
-                    break
+    def _draw(self):
+        # DRAWING
 
-            # DRAWING
-
-            self.screen.blit(self.background, (0, 0))
-
-            for obj in chain(self.asteroids.values(), self.bullets.values(), (self.starship,) if self.starship else ()):
-                #obj.animate()
-                obj.contain()
-                obj.draw()
-
-            if self.status_text:
-                print_text(self.screen, self.status_text, self.font)
-
-            if self.starship is not None:
-                shots_left = 0
-
-                """  # broken for now
-                for asteroid in self.asteroids:
-                    if asteroid.image == IMG_ASTEROID_BIG:
-                        shots_left += 7
-                    elif asteroid.image == IMG_ASTEROID_MEDIUM:
-                        shots_left += 3
-                    else:
-                        shots_left += 1
-                """
-
-                self.shots_status = shots_left
-
-            print_text(self.screen, str(self.shots_status), self.font, (0, 0))
-
-            pygame.display.flip()
-            self.clock.tick(60)
+        self.screen.blit(self.background, (0, 0))
 
         for obj in chain(self.asteroids.values(), self.bullets.values(), (self.starship,) if self.starship else ()):
             #obj.animate()
@@ -126,7 +107,8 @@ class MeteorDerby:
 
         if self.starship is not None:
             shots_left = 0
-            """
+
+            """  # broken for now
             for asteroid in self.asteroids:
                 if asteroid.image == IMG_ASTEROID_BIG:
                     shots_left += 7
@@ -135,9 +117,11 @@ class MeteorDerby:
                 else:
                     shots_left += 1
             """
+
             self.shots_status = shots_left
 
         print_text(self.screen, str(self.shots_status), self.font, (0, 0))
 
         pygame.display.flip()
         self.clock.tick(60)
+
