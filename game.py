@@ -1,19 +1,16 @@
 import pygame
+from pygame.math import Vector2
 import math
 from itertools import chain
 
 # PYGAME RESOURCES
 
 from utils import print_text
-from models import GameObject, Starship, Asteroid, Bullet
+from models import Starship, Asteroid, Bullet
 
 #self.font = pygame.font.Font(None, 64)
 
 # GAME CLASSES AND METHODS
-
-# GAME INIT
-done = False
-
 
 class MeteorDerby:
     def __init__(self):
@@ -23,6 +20,8 @@ class MeteorDerby:
         self.screen = pygame.display.set_mode((800, 600))
         self.background = pygame.image.load('earth.png').convert()
         self.clock = pygame.time.Clock()
+
+    def _new_game(self):
         self.asteroids = {}
         for _ in range(6):
             Asteroid(self.screen, registry=self.asteroids)
@@ -31,25 +30,33 @@ class MeteorDerby:
         self.status_text = ''
         self.font = pygame.font.Font(None, 64)
         self.shots_status = 0
-
+        self.game_over = False
 
     def mainloop(self):
-        done = False
 
-        while not done:
+        self._new_game()
+        self.run = True
+        while self.run:
             self._process_input()
             self._process_game_logic()
             self._draw()
         pygame.quit()
 
 
+    def _get_game_objects(self):
+        return chain(self.asteroids.values(), self.bullets.values(),
+                     (self.starship,) if self.starship else ())
+
     def _process_input(self):
         # EVENTS
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
+            if (self.game_over and event.type == pygame.KEYDOWN and
+                event.key == pygame.K_TAB):
+                self._new_game()
+            elif event.type == pygame.QUIT:
+                self.run = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                done = True
+                self.run = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 if not self.starship:
                     continue
@@ -60,22 +67,24 @@ class MeteorDerby:
                 #self.bullets.append(bullet)
 
     def _process_game_logic(self):
-        # LOGIC
 
+        for obj in self._get_game_objects():
+            obj.move()
+
+        # LOGIC
         if self.starship:
             if pygame.key.get_pressed()[pygame.K_RIGHT]:
                 self.starship.rotate_clockwise()
             elif pygame.key.get_pressed()[pygame.K_LEFT]:
                 self.starship.rotate_counterclockwise()
             if pygame.key.get_pressed()[pygame.K_UP]:
-                self.starship.move()
+                self.starship.accelerate()
 
         for asteroid in self.asteroids.values():
-            """
             if self.starship and asteroid.collides_with(self.starship):
                 self.status_text = 'You lost!'
+                self.game_over = True
                 self.starship = None
-            """
 
         for bullet in list(self.bullets.values()):
             """
@@ -86,10 +95,11 @@ class MeteorDerby:
             for asteroid in self.asteroids.values():
                 if asteroid.collides_with(bullet):
                     asteroid.split()
+                    bullet.destroy()
 
                 if not self.asteroids and not self.status_text:
+                    self.game_over = True
                     self.status_text = 'You won!'
-                bullet.destroy()
                 break
 
     def _draw(self):
@@ -97,9 +107,7 @@ class MeteorDerby:
 
         self.screen.blit(self.background, (0, 0))
 
-        for obj in chain(self.asteroids.values(), self.bullets.values(), (self.starship,) if self.starship else ()):
-            #obj.animate()
-            obj.contain()
+        for obj in self._get_game_objects():
             obj.draw()
 
         if self.status_text:

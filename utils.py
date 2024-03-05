@@ -4,22 +4,21 @@ from pygame import Surface
 from pygame.math import Vector2
 
 
-def get_random_pos(width, height):
+def get_random_pos(surface: Surface):
     angle = 2 * math.pi * random.random()
-    hw = int(width / 2)
-    hh = int(height / 2)
+    #angle = 360 * random.random()
+    hw = int(surface.get_width() / 2)
+    hh = int(surface.get_height() / 2)
     rad = min(hw, hh)
-    return [hw + rad * math.sin(angle), hh + rad * math.cos(angle)]
-
-def gen_random_pos(surface: Surface):
+    return Vector2(hw + rad * math.sin(angle), hh + rad * math.cos(angle))
 
     return Vector2(surface.get_height() * random.random(),
                     surface.get_width() * random.random()) 
 
-def gen_random_vel():
+def get_random_vel():
 
-    return Vector2(10.0 * (random.random() - 0.5),
-                   10.0 * (random.random() - 0.5))
+    return Vector2(1.0 * (random.random() - 0.5),
+                   1.0 * (random.random() - 0.5))
 
 
 def change_dir(direction, angle_deg, acceleration):
