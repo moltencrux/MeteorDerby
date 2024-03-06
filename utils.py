@@ -17,8 +17,8 @@ def get_random_pos(surface: Surface):
 
 def get_random_vel():
 
-    return Vector2(1.0 * (random.random() - 0.5),
-                   1.0 * (random.random() - 0.5))
+    return Vector2(2.0 * (random.random() - 0.5),
+                   2.0 * (random.random() - 0.5))
 
 
 def change_dir(direction, angle_deg, acceleration):
