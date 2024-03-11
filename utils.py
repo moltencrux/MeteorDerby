@@ -69,3 +69,7 @@ def load_and_scale(image_path, target_size):
     scaled_image = pygame.transform.smoothscale(original_image, (scaled_width, scaled_height))
     
     return scaled_image
+
+def get_random_spin(max_spin):
+    angle = random.randrange(-max_spin + 1, max_spin)
+    return angle

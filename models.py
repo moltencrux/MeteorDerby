@@ -4,7 +4,7 @@ import pygame.image
 import random
 #import operator
 from itertools import count
-from utils import get_random_pos, get_random_vel, load_and_scale
+from utils import get_random_pos, get_random_vel, load_and_scale, get_random_spin
 from pygame.math import Vector2
 from pygame.transform import rotozoom, rotate
 from pygame.sprite import Sprite, Group
@@ -196,6 +196,7 @@ class Asteroid(MirroredGameObject):
         self.size = size
         super().__init__(screen, image, pos, velocity, False, groups)
         self.counter = count()
+        self.angular_velocity = get_random_spin(5)
 
     @classmethod
     def _load_images(cls):
@@ -223,7 +224,9 @@ class Asteroid(MirroredGameObject):
 
     def update(self):
         self._count = next(self.counter)
+        self.direction = self.direction.rotate(self.angular_velocity)
         super().update()
+
 
 
 class Bullet(GameObject):
