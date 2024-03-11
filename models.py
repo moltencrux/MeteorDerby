@@ -147,7 +147,7 @@ class Starship(MirroredGameObject):
         pos = Vector2(screen.get_size()) / 2.0 if pos is None else pos
         super().__init__(screen, None, pos, velocity)
         self.acceleration = 0.1
-        self.laser = pygame.mixer.Sound('laser.wav')
+        self.laser = pygame.mixer.Sound('lasercannon.flac')
         self.mirrors.add(self)
 
     @classmethod
@@ -155,7 +155,7 @@ class Starship(MirroredGameObject):
         if not cls._images_loaded:
             if not pygame.get_init():
                 pygame.init()
-            cls._images = {None: load_and_scale('starship.png', (50, 50)).convert_alpha()}
+            cls._images = {None: load_and_scale('ship4.png', (50, 50)).convert_alpha()}
             cls._images_loaded = True
 
     def _rotate(self, clockwise=True):
@@ -206,9 +206,9 @@ class Asteroid(MirroredGameObject):
 
             # Load images
             cls._images = {size: load_and_scale(path, dims).convert_alpha() for size, path, dims in 
-                            (('small', 'asteroid-small.png', (40, 40)),
-                            ('medium', 'asteroid-medium.png',(65, 65)),
-                            ('big', 'asteroid-big.png', (80, 80)))}
+                            (('small', 'asteroid.png', (40, 40)),
+                            ('medium', 'asteroid.png',(65, 65)),
+                            ('big', 'asteroid.png', (80, 80)))}
             cls._images[''] = cls._images['big']
             cls._images[None] = cls._images['big']
             cls._images_loaded = True
@@ -236,7 +236,7 @@ class Bullet(GameObject):
         if not cls._images_loaded:
             if not pygame.get_init():
                 pygame.init()
-            cls._images = {None: pygame.image.load('bullet.png').convert_alpha()}
+            cls._images = {None: pygame.image.load('beam.png').convert_alpha()}
             cls._images_loaded = True
 
     def update(self):

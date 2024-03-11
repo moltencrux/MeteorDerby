@@ -39,3 +39,33 @@ def print_text(surface, text, font, pos=None):
         surface.blit(text_surface, pos)
 
 
+import pygame
+
+def load_and_scale(image_path, target_size):
+    """
+    Load an image from the given path and scale it to fit within the target size while preserving aspect ratio.
+    
+    Args:
+        image_path (str): The path to the image file.
+        target_size (tuple): A tuple containing the target width and height (target_width, target_height).
+        
+    Returns:
+        pygame.Surface: The scaled image surface.
+    """
+    original_image = pygame.image.load(image_path).convert_alpha()
+    original_size = original_image.get_size()
+    target_width, target_height = target_size
+    
+    # Calculate the scaling factors for width and height
+    width_scale = target_width / original_size[0]
+    height_scale = target_height / original_size[1]
+    
+    # Choose the smaller scaling factor to ensure the image fits within the target size
+    scale_factor = min(width_scale, height_scale)
+    
+    # Scale the image while preserving aspect ratio
+    scaled_width = int(original_size[0] * scale_factor)
+    scaled_height = int(original_size[1] * scale_factor)
+    scaled_image = pygame.transform.smoothscale(original_image, (scaled_width, scaled_height))
+    
+    return scaled_image
