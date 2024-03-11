@@ -1,14 +1,13 @@
 import pygame
-from pygame import Surface
+from pygame import Surface, Rect
 import pygame.image
 import random
-import math
-import operator
+#import operator
 from itertools import count
-from utils import get_random_pos, get_random_vel
+from utils import get_random_pos, get_random_vel, load_and_scale
 from pygame.math import Vector2
-from pygame.transform import rotozoom
-from pygame.sprite import Sprite
+from pygame.transform import rotozoom, rotate
+from pygame.sprite import Sprite, Group
 
 
 UP = Vector2(0, -1)
@@ -24,10 +23,14 @@ class GameObject(Sprite):
         self._load_images()
         self.screen = screen
         self.image = self._images[None] if image is None else image
+        self.unrotated_image = self.image
         self.pos = Vector2() if pos is None else pos
         self.rect = self.image.get_rect()
+        self.rect.center = tuple(self.pos)
         self.velocity = Vector2() if velocity is None else velocity
         self.direction = Vector2(UP)
+        self._previous_direction = Vector2()
+        self.mask = pygame.mask.from_surface(self.image)
 
     @classmethod
     def _load_images(cls):
@@ -37,84 +40,107 @@ class GameObject(Sprite):
             cls._images = {None, None}
             cls._images_loaded = True
 
-    def draw(self, surface):
-        angle = self.direction.angle_to(UP)
-        rotated_surface = rotozoom(self.image, angle, 1.0)
-        rotated_surface_size = Vector2(rotated_surface.get_size())
-        self.surface.blit(rotated_surface, self.pos)
-
     def update(self):
+
+        if self._previous_direction != self.direction:
+            angle = self.direction.angle_to(UP)
+            prev_center = self.rect.center
+            self.unrotated_image
+            #self.image = rotozoom(self.unrotated_image, angle, 1.0)
+            self.image = rotate(self.unrotated_image, angle)
+            self.image.get_rect().center = prev_center
+            self._previous_direction.update(self.direction)
+            self.rect = self.image.get_rect()
+            self.rect.center = self.pos
+
         self.pos += self.velocity
         self.rect.center = self.pos
 
-class WrappedGameObject(GameObject):
 
-    def draw(self, surface):
-        angle = self.direction.angle_to(UP)
-        rotated_surface = rotozoom(self.image, angle, 1.0)
-        rotated_surface_size = Vector2(rotated_surface.get_size())
+class MirrorSprite(Sprite):
 
-        for offset_x, offset_y in self._get_mirror_offsets():
-            mirror_position = self.pos + Vector2(offset_x, offset_y)
-            blit_position = mirror_position - rotated_surface_size * 0.5
-            surface.blit(rotated_surface, blit_position)
+    def __init__(self, master, bearing, groups=()):
+        self.master = master
+        self.screen = master.screen
+        self.bearing = Vector2(bearing)
+        self._pos = Vector2()
+        self._mirror_rect = Rect(master.rect)
+        self._mirror_rect.center = master.pos
+        super().__init__(groups)
+        # there should be 3 mirrors for an object that needs to be mirrored
+        # horizontal, vertical, diagonal
+        # we can determine the position based on screen size.. and mod
+        # i.e. add ht to x % size, or
 
-    def update(self):
-        super().update()
-        self._wrap_position()
+    @property
+    def rect(self):
+        self._mirror_rect.size = self.master.rect.size
+        self._mirror_rect.center = self._apply_offsets(self.master.rect.center)
+        return self._mirror_rect
 
-    def _get_mirror_offsets(self):
-        size = self.screen.get_size()
-        offsets = [(0, 0)]  # Default offset for no wrapping
+    @property
+    def image(self):
+        return self.master.image
 
-        if self.pos.x - self.image.get_rect().width / 2 < 0:
-            offsets.append((size[0], 0))  # Wrap horizontally to the left
-        elif self.pos.x + self.image.get_rect().width / 2 > size[0]:
-            offsets.append((-size[0], 0))   # Wrap horizontally to the right
+    @property
+    def mask(self):
+        return self.master.mask
 
-        if self.pos.y - self.image.get_rect().height / 2 < 0:
-            offsets.append((0, size[1]))  # Wrap vertically upwards
-        elif self.pos.y + self.image.get_rect().height / 2 > size[1]:
-            offsets.append((0, -size[1]))   # Wrap vertically downwards
+    @property
+    def pos(self):
+        self._pos.update(self._apply_offsets(self.master.pos))
+        return self._pos
 
-        # Check if object overlaps both horizontal and vertical edges (screen corners)
-        if len(offsets) == 3:
-            corner_offset = (offsets[1][0], offsets[2][1])  # Combine horizontal and vertical offsets
-            offsets.append(corner_offset)  # Add screen corner offset
+    def _apply_offsets(self, p):
+        w, h = self.screen.get_size()
+        p = Vector2(p)
+        xcoef = 1 if abs(p.x) < abs(w - p.x) else -1
+        ycoef = 1 if abs(p.y) < abs(h - p.y) else -1
+        offset = Vector2(w * xcoef * self.bearing[0], h * ycoef * self.bearing[1])
+        return tuple(p + offset)
 
-        return offsets
+    @property
+    def image(self):
+        return self.master.image
+
+    def kill(self):
+        super().kill()  # maybe if we call this first, no infinite loop
+        self.master.kill()
+        
+    def __getattr__(self, attr):
+        return getattr(self.master, attr)
+
+class MirroredGameObject(GameObject):
+
+    def __init__(self, screen, image=None, pos=None, velocity=None, clone=False,
+                 groups=()):
+        self.mirrors = Group()
+        super().__init__(screen, image, pos, velocity, groups)
+        groups = (self.mirrors, *groups)
+        # create clones & add them to group
+
+        for bearing in ((0, 1), (1, 0), (1, 1)):
+            MirrorSprite(self, bearing, (self.mirrors, *groups))
 
     def _wrap_position(self):
         x, y = self.pos
         w, h = self.screen.get_size()
         self.pos = Vector2(x % w, y % h)
 
-    def animate(self):
-        self.pos = list(map(operator.add, self.pos, self.dir))
+    def update(self):
+        super().update()
+        self._wrap_position()
 
-    def collides_with(self, other_obj):
-        self_rect = self.image.get_rect(center=self.pos)
-        other_rect = other_obj.image.get_rect(center=other_obj.pos)
-        
-        for offset_x, offset_y in self._get_mirror_offsets():
-            mirrored_self_rect = self_rect.move(offset_x, offset_y)
-            overlap_rect = mirrored_self_rect.clip(other_rect)
-
-            for x in range(overlap_rect.width):
-                for y in range(overlap_rect.height):
-                    self_pixel_pos = (overlap_rect.left - mirrored_self_rect.left + x, overlap_rect.top - mirrored_self_rect.top + y)
-                    other_pixel_pos = (overlap_rect.left - other_rect.left + x, overlap_rect.top - other_rect.top + y)
-            
-                    self_pixel_color = self.image.get_at(self_pixel_pos)
-                    other_pixel_color = other_obj.image.get_at(other_pixel_pos)
-
-                    if self_pixel_color[3] > 0 and other_pixel_color[3] > 0:
-                        return True  # Collision detected
-
-        return False  # No collision detected
+    def kill(self):
+        if not hasattr(self, '_destroyed'):
+            self._destroyed = True
+            for mirror in self.mirrors:
+                if mirror is not self:
+                    mirror.kill()
+        super().kill()
 
 
-class Starship(WrappedGameObject):
+class Starship(MirroredGameObject):
 
     def __init__(self, screen, pos=None, velocity=None):
         self._load_images()
@@ -122,13 +148,14 @@ class Starship(WrappedGameObject):
         super().__init__(screen, None, pos, velocity)
         self.acceleration = 0.1
         self.laser = pygame.mixer.Sound('laser.wav')
+        self.mirrors.add(self)
 
     @classmethod
     def _load_images(cls):
         if not cls._images_loaded:
             if not pygame.get_init():
                 pygame.init()
-            cls._images = {None: pygame.image.load('starship.png').convert_alpha()}
+            cls._images = {None: load_and_scale('starship.png', (50, 50)).convert_alpha()}
             cls._images_loaded = True
 
     def _rotate(self, clockwise=True):
@@ -152,7 +179,14 @@ class Starship(WrappedGameObject):
     def rotate_counterclockwise(self):
         self._rotate(False)
 
-class Asteroid(WrappedGameObject):
+    def draw_center_dot(self):
+        # Draw a red dot at the center of the sprite's image
+        dot_radius = 3
+        dot_color = (255, 0, 0)
+        dot_center = self.rect.center
+        pygame.draw.circle(self.screen, dot_color, dot_center, dot_radius)
+
+class Asteroid(MirroredGameObject):
 
     def __init__(self, screen, pos=None, velocity=None, size='big', groups=()):
         self._load_images()
@@ -160,7 +194,8 @@ class Asteroid(WrappedGameObject):
         pos = get_random_pos(screen) if pos is None else pos
         velocity = get_random_vel() if velocity is None else velocity
         self.size = size
-        super().__init__(screen, image, pos, velocity, groups)
+        super().__init__(screen, image, pos, velocity, False, groups)
+        self.counter = count()
 
     @classmethod
     def _load_images(cls):
@@ -170,29 +205,31 @@ class Asteroid(WrappedGameObject):
                 pygame.init()
 
             # Load images
-            cls._images = {size: pygame.image.load(path).convert_alpha() for size, path in 
-                            (('small', 'asteroid-small.png'),
-                            ('medium', 'asteroid-medium.png'),
-                            ('big', 'asteroid-big.png'))}
+            cls._images = {size: load_and_scale(path, dims).convert_alpha() for size, path, dims in 
+                            (('small', 'asteroid-small.png', (40, 40)),
+                            ('medium', 'asteroid-medium.png',(65, 65)),
+                            ('big', 'asteroid-big.png', (80, 80)))}
             cls._images[''] = cls._images['big']
             cls._images[None] = cls._images['big']
             cls._images_loaded = True
 
     def split(self):
 
-        if self.size != 'small':
-            size = 'medium'
-            if self.size != 'medium':
-                size = 'small'
-
+        size = {'big':'medium', 'medium':'small', 'small':None}.get(self.size)
+        if size is not None:
             for _ in range(2):
                 Asteroid(self.screen, self.pos, None, size, self.groups())
         self.kill()
+
+    def update(self):
+        self._count = next(self.counter)
+        super().update()
 
 
 class Bullet(GameObject):
     def __init__(self, screen, pos, velocity, groups=()):
         super().__init__(screen, None, pos, velocity, groups)
+        self.direction = self.velocity
     
     @classmethod
     def _load_images(cls):
@@ -204,5 +241,6 @@ class Bullet(GameObject):
 
     def update(self):
         super().update()
-        if not self.image.get_rect().colliderect(self.screen.get_rect()):
+        if not self.rect.colliderect(self.screen.get_rect()):
             self.kill()
+
