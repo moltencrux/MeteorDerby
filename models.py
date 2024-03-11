@@ -4,7 +4,8 @@ import pygame.image
 import random
 #import operator
 from itertools import count
-from utils import get_random_pos, get_random_vel, load_and_scale, get_random_spin
+from utils import (get_random_pos, get_random_vel, load_sprite_sheet,
+                   load_and_scale, get_random_spin)
 from pygame.math import Vector2
 from pygame.transform import rotozoom, rotate
 from pygame.sprite import Sprite, Group
@@ -23,7 +24,7 @@ class GameObject(Sprite):
         self._load_images()
         self.screen = screen
         self.image = self._images[None] if image is None else image
-        self.unrotated_image = self.image
+        self.orig_image = self.image
         self.pos = Vector2() if pos is None else pos
         self.rect = self.image.get_rect()
         self.rect.center = tuple(self.pos)
@@ -31,6 +32,8 @@ class GameObject(Sprite):
         self.direction = Vector2(UP)
         self._previous_direction = Vector2()
         self.mask = pygame.mask.from_surface(self.image)
+        self._animate = False
+        self._repeat = False
 
     @classmethod
     def _load_images(cls):
@@ -40,14 +43,39 @@ class GameObject(Sprite):
             cls._images = {None, None}
             cls._images_loaded = True
 
+
+    def animate(self, name, frame_duration=1, repeat=False):
+        self.frames = self._animations[name]
+        self._repeat_animation = repeat
+        self.current_frame = 0
+        self.last_frame_time = pygame.time.get_ticks()
+        self._animate = True
+        self._frame_duration = frame_duration
+
     def update(self):
+
+        if self._animate is True:
+
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_frame_time > self._frame_duration:
+                self.current_frame += 1
+                if self.current_frame >= len(self.frames) - 1:
+                    if self._repeat:
+                        self.current_frame = 0
+                    else:
+                        self._animate = False
+                        #self.kill()  # or handle end of animation differently
+
+                self.orig_image = self.frames[self.current_frame]
+                self._previous_direction = Vector2() # trigger re-rotation
+                self.last_frame_time = current_time
 
         if self._previous_direction != self.direction:
             angle = self.direction.angle_to(UP)
             prev_center = self.rect.center
-            self.unrotated_image
-            #self.image = rotozoom(self.unrotated_image, angle, 1.0)
-            self.image = rotate(self.unrotated_image, angle)
+            #self.orig_image
+            #self.image = rotozoom(self.orig_image, angle, 1.0)
+            self.image = rotate(self.orig_image, angle)
             self.image.get_rect().center = prev_center
             self._previous_direction.update(self.direction)
             self.rect = self.image.get_rect()
@@ -141,6 +169,7 @@ class MirroredGameObject(GameObject):
 
 
 class Starship(MirroredGameObject):
+    _animations = {}
 
     def __init__(self, screen, pos=None, velocity=None):
         self._load_images()
@@ -148,6 +177,7 @@ class Starship(MirroredGameObject):
         super().__init__(screen, None, pos, velocity)
         self.acceleration = 0.1
         self.laser = pygame.mixer.Sound('lasercannon.flac')
+        self.boom_sound = pygame.mixer.Sound("explosion.flac")
         self.mirrors.add(self)
 
     @classmethod
@@ -155,8 +185,15 @@ class Starship(MirroredGameObject):
         if not cls._images_loaded:
             if not pygame.get_init():
                 pygame.init()
-            cls._images = {None: load_and_scale('ship4.png', (50, 50)).convert_alpha()}
+            cls._images = {None: load_and_scale('starship.png', (50, 50)).convert_alpha()}
             cls._images_loaded = True
+
+        explosion = load_sprite_sheet('explosion.png', (8, 8))
+        explosion.append(pygame.Surface((0, 0), pygame.SRCALPHA))
+        cls._animations['explosion'] = explosion
+
+
+
 
     def _rotate(self, clockwise=True):
         delta = 3
@@ -186,6 +223,10 @@ class Starship(MirroredGameObject):
         dot_center = self.rect.center
         pygame.draw.circle(self.screen, dot_color, dot_center, dot_radius)
 
+    def explode(self):
+        self.animate('explosion')
+        self.boom_sound.play()
+
 class Asteroid(MirroredGameObject):
 
     def __init__(self, screen, pos=None, velocity=None, size='big', groups=()):
@@ -213,6 +254,7 @@ class Asteroid(MirroredGameObject):
             cls._images[''] = cls._images['big']
             cls._images[None] = cls._images['big']
             cls._images_loaded = True
+
 
     def split(self):
 

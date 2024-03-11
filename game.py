@@ -97,7 +97,7 @@ class MeteorDerby:
                 verified_hits = pygame.sprite.spritecollide(ship, possible_hits, False, pygame.sprite.collide_mask)
                 for asteroid in verified_hits:
                     asteroid.split()
-                    ship.kill()
+                    ship.explode()
                     self.status_text = 'You lost!'
                     self.game_over = True
                     break

@@ -43,11 +43,13 @@ import pygame
 
 def load_and_scale(image_path, target_size):
     """
-    Load an image from the given path and scale it to fit within the target size while preserving aspect ratio.
+    Load an image from the given path and scale it to fit within the target size
+    while preserving aspect ratio.
     
     Args:
         image_path (str): The path to the image file.
-        target_size (tuple): A tuple containing the target width and height (target_width, target_height).
+        target_size (tuple): A tuple containing the target width and height
+        (target_width, target_height).
         
     Returns:
         pygame.Surface: The scaled image surface.
@@ -73,3 +75,31 @@ def load_and_scale(image_path, target_size):
 def get_random_spin(max_spin):
     angle = random.randrange(-max_spin + 1, max_spin)
     return angle
+
+
+import pygame
+
+
+
+def load_sprite_sheet(source, dimensions, scale=None):
+
+    if isinstance(source, str):
+        sheet = pygame.image.load(source).convert_alpha()
+    elif isinstance(source, pygame.Surface):
+        sheet = source
+    else:
+        raise ValueError("source is not a filename or a Surface.")
+    sheet = pygame.image.load(source).convert_alpha()
+    sheet_width, sheet_height = sheet.get_size()
+    rows, cols = dimensions
+    cell_width = sheet_width // cols
+    cell_height = sheet_height // rows
+    frames = []
+    for row in range(rows):
+        for col in range(cols):
+            cell_rect = pygame.Rect(col * cell_width, row * cell_height, cell_width, cell_height)
+            cell_image = sheet.subsurface(cell_rect)
+            if scale:
+                cell_image = pygame.transform.scale(cell_image, scale)
+            frames.append(cell_image)
+    return frames
