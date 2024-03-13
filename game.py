@@ -63,12 +63,12 @@ class MeteorDerby:
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.run = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                if not self.starship:
+                if not self.starship or not self.starship.alive:
                     continue
                 self.starship.fire(self.bullets)
 
         pressed = pygame.key.get_pressed()
-        if self.starship:
+        if self.starship and self.starship.alive:
             if pressed[pygame.K_RIGHT]:
                 self.starship.rotate_clockwise()
             elif pressed[pygame.K_LEFT]:
@@ -92,15 +92,16 @@ class MeteorDerby:
                 self.starship.update()
 
             # LOGIC
-            for ship in self.starship.mirrors:
-                possible_hits = pygame.sprite.spritecollide(ship, self.asteroids, False)
-                verified_hits = pygame.sprite.spritecollide(ship, possible_hits, False, pygame.sprite.collide_mask)
-                for asteroid in verified_hits:
-                    asteroid.split()
-                    ship.explode()
-                    self.status_text = 'You lost!'
-                    self.game_over = True
-                    break
+            if self.starship and self.starship.alive:
+                for ship in self.starship.mirrors:
+                    possible_hits = pygame.sprite.spritecollide(ship, self.asteroids, False)
+                    verified_hits = pygame.sprite.spritecollide(ship, possible_hits, False, pygame.sprite.collide_mask)
+                    for asteroid in verified_hits:
+                        asteroid.split()
+                        ship.explode()
+                        self.status_text = 'You lost!'
+                        self.game_over = True
+                        break
 
             for bullet in self.bullets:
                 possible_hits = pygame.sprite.spritecollide(bullet, self.asteroids, False)
@@ -128,15 +129,15 @@ class MeteorDerby:
         if self.starship is not None:
             shots_left = 0
 
-            """  # broken for now
+            # broken for now
             for asteroid in self.asteroids:
-                if asteroid.image == IMG_ASTEROID_BIG:
-                    shots_left += 7
-                elif asteroid.image == IMG_ASTEROID_MEDIUM:
-                    shots_left += 3
-                else:
-                    shots_left += 1
-            """
+                if isinstance(asteroid, Asteroid):
+                    if asteroid.size == 'big':
+                        shots_left += 13
+                    elif asteroid.size == 'medium':
+                        shots_left += 4
+                    else:
+                        shots_left += 1
 
             self.shots_status = shots_left
 

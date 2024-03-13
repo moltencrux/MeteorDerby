@@ -44,13 +44,14 @@ class GameObject(Sprite):
             cls._images_loaded = True
 
 
-    def animate(self, name, frame_duration=1, repeat=False):
+    def animate(self, name, frame_duration=1, repeat=False, on_finish=None):
         self.frames = self._animations[name]
         self._repeat_animation = repeat
         self.current_frame = 0
         self.last_frame_time = pygame.time.get_ticks()
         self._animate = True
         self._frame_duration = frame_duration
+        self._on_finish = on_finish
 
     def update(self):
 
@@ -64,7 +65,8 @@ class GameObject(Sprite):
                         self.current_frame = 0
                     else:
                         self._animate = False
-                        #self.kill()  # or handle end of animation differently
+                        if self._on_finish is not None:
+                            self._on_finish()
 
                 self.orig_image = self.frames[self.current_frame]
                 self._previous_direction = Vector2() # trigger re-rotation
@@ -175,10 +177,11 @@ class Starship(MirroredGameObject):
         self._load_images()
         pos = Vector2(screen.get_size()) / 2.0 if pos is None else pos
         super().__init__(screen, None, pos, velocity)
-        self.acceleration = 0.1
+        self.acceleration = 0.2
         self.laser = pygame.mixer.Sound('lasercannon.flac')
         self.boom_sound = pygame.mixer.Sound("explosion.flac")
         self.mirrors.add(self)
+        self.alive = True
 
     @classmethod
     def _load_images(cls):
@@ -224,7 +227,8 @@ class Starship(MirroredGameObject):
         pygame.draw.circle(self.screen, dot_color, dot_center, dot_radius)
 
     def explode(self):
-        self.animate('explosion')
+        self.alive = False
+        self.animate('explosion', on_finish=self.kill)
         self.boom_sound.play()
 
 class Asteroid(MirroredGameObject):
@@ -249,8 +253,8 @@ class Asteroid(MirroredGameObject):
             # Load images
             cls._images = {size: load_and_scale(path, dims).convert_alpha() for size, path, dims in 
                             (('small', 'asteroid.png', (40, 40)),
-                            ('medium', 'asteroid.png',(65, 65)),
-                            ('big', 'asteroid.png', (80, 80)))}
+                            ('medium', 'asteroid.png',(95, 95)),
+                            ('big', 'asteroid.png', (120, 120)))}
             cls._images[''] = cls._images['big']
             cls._images[None] = cls._images['big']
             cls._images_loaded = True
@@ -260,7 +264,7 @@ class Asteroid(MirroredGameObject):
 
         size = {'big':'medium', 'medium':'small', 'small':None}.get(self.size)
         if size is not None:
-            for _ in range(2):
+            for _ in range(3):
                 Asteroid(self.screen, self.pos, None, size, self.groups())
         self.kill()
 
@@ -281,7 +285,8 @@ class Bullet(GameObject):
         if not cls._images_loaded:
             if not pygame.get_init():
                 pygame.init()
-            cls._images = {None: pygame.image.load('beam.png').convert_alpha()}
+            #cls._images = {None: pygame.image.load('beam.png').convert_alpha()}
+            cls._images = {None: load_and_scale('beam.png', (30, 54)).convert_alpha()}
             cls._images_loaded = True
 
     def update(self):

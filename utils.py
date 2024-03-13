@@ -17,8 +17,8 @@ def get_random_pos(surface: Surface):
 
 def get_random_vel():
 
-    return Vector2(2.0 * (random.random() - 0.5),
-                   2.0 * (random.random() - 0.5))
+    return Vector2(4.0 * (random.random() - 0.5),
+                   4.0 * (random.random() - 0.5))
 
 
 def change_dir(direction, angle_deg, acceleration):
@@ -29,7 +29,7 @@ def change_dir(direction, angle_deg, acceleration):
 
 def print_text(surface, text, font, pos=None):
     w, h = surface.get_size()
-    text_surface = font.render(text, 1, (200, 200, 0))
+    text_surface = font.render(text, 1, (0, 200, 0))
     rect = text_surface.get_rect()
     rect.center = [w / 2, h / 2]
 
