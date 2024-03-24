@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from game import GameTest
 
 if __name__ == "__main__":
